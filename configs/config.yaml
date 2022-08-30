@@ -1,0 +1,19 @@
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  mongo:
+    source: mongodb://root:123456@localhost:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false
+    chat_database: im
+    sync_chat_collection: chat_sync
+    history_chat_collection: chat_history
+  redis:
+    addr: 127.0.0.1:6379
+    db: 1
+    password: coffeechat
+    read_timeout: 0.2s
+    write_timeout: 0.2s

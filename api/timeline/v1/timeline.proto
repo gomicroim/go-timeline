@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package timeline.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "timeline-service/api/timeline/v1;v1";
+
+// The Timeline service definition.
+service Timeline {
+  // c2c 发送消息请求
+  rpc Send(SendMessageRequest) returns (SendMessageReply){
+    option (google.api.http) = {
+      post: "/timeline/send"
+      body: "*"
+    };
+  }
+
+  // c2g 发送消息请求
+  rpc SendGroup(SendGroupRequest) returns (SendGroupReply){
+    option (google.api.http) = {
+      post: "/timeline/sendGroup"
+      body: "*"
+    };
+  }
+
+  // 同步消息请求
+  rpc GetSyncMessage (SyncMessageRequest) returns (SyncMessageReply) {
+    option (google.api.http) = {
+      get: "/timeline/sync"
+    };
+  }
+
+  // 查询单聊历史消息请求
+  rpc GetSingleHistoryMessage (GetSingleHistoryMessageRequest) returns (GetSingleHistoryMessageReply) {
+    option (google.api.http) = {
+      get: "/timeline/history/single/{from}/{to}"
+    };
+  }
+
+  // 查询群历史消息请求
+  rpc GetGroupHistoryMessage (GetGroupHistoryMessageRequest) returns (GetGroupHistoryMessageReply) {
+    option (google.api.http) = {
+      get: "/timeline/history/group/{group}"
+    };
+  }
+}
+
+// 发送消息请求(c2c)
+message SendMessageRequest{
+  string from = 1;
+  string to = 2;
+  string message = 3;
+}
+
+message SendMessageReply{
+  int64 sequence = 1;
+}
+
+// 发送消息请求(c2g)
+message SendGroupRequest{
+  string group_name = 1;
+  repeated string group_members = 2;
+  string message = 3;
+}
+
+message SendGroupReply{
+  repeated string failed_members = 1;
+}
+
+// 同步消息请求
+message SyncMessageRequest {
+  string member = 1;
+  int64 last_read = 2;
+  int32 count = 3;
+}
+
+message TimelineEntry {
+  int64 sequence = 1;
+  string message = 2;
+}
+
+message SyncMessageReply {
+  repeated TimelineEntry entry_set = 1;
+}
+
+// 查询单聊历史消息请求
+message GetSingleHistoryMessageRequest{
+  string from = 1;
+  string to = 2;
+  int64  last_read = 3;
+  int32 count = 4;
+}
+
+message GetSingleHistoryMessageReply {
+  repeated TimelineEntry entry_set = 1;
+}
+
+// 查询群历史消息请求
+message GetGroupHistoryMessageRequest{
+  string group = 1;
+  int64  last_read = 3;
+  int32 count = 4;
+}
+
+message GetGroupHistoryMessageReply{
+  repeated TimelineEntry entry_set = 1;
+}
