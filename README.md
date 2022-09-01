@@ -7,6 +7,38 @@ depends:
 - mongo: >= 5.0
 - redis: >= 6.2
 
+framework:
+
+- [kratos](https://github.com/go-kratos/kratos)
+
+## architecture
+
+### data
+
+mongodb主要有2个文档：
+
+- `chat_sync`: 离线消息库（同步库），扩散写。一个消息写N份，当客户端成功拉取消息后，应删除离线消息，释放存储（目前为了调试方便，不会删除）
+- `chat_history`: 持久化存储库（一般使用mysql，这里为了简单直接使用mongo实现），扩散读，一个消息只写一份。有2个作用：
+  - 消息漫游。参考QQ消息漫游功能，可以任意查看几个月前，甚至一年前或者任意时间的历史消息。
+  - web支持。因为web没有存储能力（无法缓存timeline同步位点），所以可以不用从 chat_sync 走同步流程，直接通过 chat_history 拉历史消息显示即可。
+
+文档结构：
+
+```go
+type Message struct {
+	Id      string                 `bson:"id,omitempty"`      // id，非mongo的对象id
+	Seq     int64                  `bson:"seq,omitempty"`     // 连续递增序号
+	Message map[string]interface{} `bson:"message,omitempty"` // 数据内容
+}
+```
+
+- 离线消息库中：id代表收件人的id，具体的发送者信息、消息内容等需要自己解析Message，timeline服务并不限制存储的结构。
+- 持久存储库：id代表会话，私聊的会话的id为：`samllUserId:bigUserId`，群聊会话的ID就是 `groupId`。故查询的时候，直接按照该规则查询即可。
+
+### 消息序号生成
+
+timeline 序号生成直接采用 redis 实现，保证同一个id下，seq严格递增即可（且连续）。
+
 ## example
 
 ### 场景
@@ -121,6 +153,12 @@ message_test.go:132: [seq=24] a -> group_a: 初次见面，多多指教
 ```
 
 ## screenhost
+
+### mongodb
+
+![./doc/img/mongo.jpg](./doc/img/mongo.jpg)
+
+### client
 
 see [html client](./cmd/client/html/index.html): 
 
