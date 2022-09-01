@@ -138,6 +138,14 @@ curl -X POST http://localhost:8000/timeline/send \
 -d '{"from":"user_a","to":"user_b","message":"{\"from\": \"user_a\",\"to\":\"user_b\",\"text\":\"在吗？\"}"}'
 ````
 
+```json
+{
+    "from":"user_a",
+    "to":"user_b",
+    "message":"{\"from\": \"user_a\",\"to\":\"user_b\",\"text\":\"在吗？\"}"
+}
+```
+
 response:
 
 ```json
