@@ -33,7 +33,7 @@ type Message struct {
 ```
 
 - 离线消息库中：id代表收件人的id，具体的发送者信息、消息内容等需要自己解析Message，timeline服务并不限制存储的结构。
-- 持久存储库：id代表会话，私聊的会话的id为：`samllUserId:bigUserId`，群聊会话的ID就是 `groupId`。故查询的时候，直接按照该规则查询即可。
+- 持久存储库：id代表会话（会话关系timeline不存储，需要上游服务自行实现），私聊的会话的id为：`samllUserId:bigUserId`，群聊会话的ID就是 `groupId`。故查询的时候，直接按照该规则查询即可。
 
 ### 消息序号生成
 
