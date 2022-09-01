@@ -62,8 +62,8 @@
 
       // ------------- api -------------
 
-      function syncMsg(maxPullMsgCount) {
-        let uri = "member=" + getUserId() + "&last_read=" + lastRead + "&count=" + maxPullMsgCount;
+      function syncMsg(userId, maxPullMsgCount) {
+        let uri = "member=" + userId + "&last_read=" + lastRead + "&count=" + maxPullMsgCount;
         axios.get("/timeline/sync?" + uri).then(function (response) {
           let data = response.data;
           console.log(data);
@@ -77,13 +77,13 @@
             lastRead = seq;
           }
 
-          if (entrySet.length == 0) {
+          if (entrySet.length == 0 || data.latestSeq == data.entrySetLastSeq) {
             updateSyncStatus("sync finish");
           } else {
             updateSyncStatus("sync next");
             // continue pull （给1秒时间，方便观察）
             setTimeout(function () {
-              syncMsg(maxPullMsgCount);
+              syncMsg(userId, maxPullMsgCount);
             }, 1000);
           }
         });
@@ -138,7 +138,8 @@
         updateSyncStatus("sync start");
         lastRead = getLastSyncSeq();
         maxPullMsgCount = getSyncCount();
-        syncMsg(maxPullMsgCount);
+        userId = getSyncUserId();
+        syncMsg(userId, maxPullMsgCount);
       }
 
       function doSendMsg() {
@@ -164,6 +165,10 @@
 
       function getUserId() {
         return document.getElementById("from_user_id").value;
+      }
+
+      function getSyncUserId() {
+        return document.getElementById("sync_user_id").value;
       }
 
       function getToUserId() {
@@ -257,6 +262,10 @@
       <div class="msg-box-container">
         <div class="row">
           <div class="col-md-2">
+            <p style="float: left; width: auto">userId:</p>
+            <input type="text" id="sync_user_id" value="a" class="to-input" style="margin-left: 5px; float: left; width: 40px" />
+          </div>
+          <div class="col-md-2">
             <p style="float: left; width: auto">lastRead:</p>
             <input type="text" id="last_sync_seq" value="0" class="to-input" style="margin-left: 5px; float: left; width: 40px" />
           </div>
@@ -264,7 +273,7 @@
             <p style="float: left; width: auto">maxPullMsgCount:</p>
             <input type="text" id="sync_count" value="10" class="to-input" style="margin-left: 5px; float: left; width: 40px" />
           </div>
-          <div class="col-md-7">
+          <div class="col-md-5">
             <input type="button" value="sync msg" style="margin-left: 5px; float: left" onclick="doSyncMsg();" />
             <p id="sync_status" style="float: left; margin-left: 15px">ready</p>
           </div>

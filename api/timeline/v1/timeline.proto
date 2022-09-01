@@ -81,7 +81,11 @@ message TimelineEntry {
 }
 
 message SyncMessageReply {
-  repeated TimelineEntry entry_set = 1;
+  // 最新的消息序号
+  int64 latest_seq = 1;
+  // entry_set 中最后的序号值
+  int64 entry_set_last_seq = 2;
+  repeated TimelineEntry entry_set = 3;
 }
 
 // 查询单聊历史消息请求

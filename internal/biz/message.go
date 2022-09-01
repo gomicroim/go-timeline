@@ -30,7 +30,7 @@ type GroupResult struct {
 type MessageUseCase interface {
 	Send(ctx context.Context, from, to, jsonMsg string) (seq int64, err error)
 	SendGroup(ctx context.Context, group string, groupMember []string, jsonMsg string) (result []*GroupResult, err error)
-	GetSyncMessage(ctx context.Context, member string, lastRead int64, limit int) ([]data.Message, error)
+	GetSyncMessage(ctx context.Context, member string, lastRead int64, limit int) ([]data.Message, int64, error)
 
 	GetSingleHistoryMessage(ctx context.Context, from, to string, lastRead int64, numOfHistory int32) ([]data.Message, error)
 	GetGroupHistoryMessage(ctx context.Context, group string, lastRead int64, numOfHistory int32) ([]data.Message, error)
@@ -89,13 +89,20 @@ func (m *messageUseCase) SendGroup(ctx context.Context, group string, groupMembe
 	return result, nil
 }
 
-func (m *messageUseCase) GetSyncMessage(ctx context.Context, member string, lastRead int64, limit int) ([]data.Message, error) {
-	return m.syncRepo.Scan(ctx, member, data.ScanParameter{
+func (m *messageUseCase) GetSyncMessage(ctx context.Context, member string, lastRead int64, limit int) ([]data.Message, int64, error) {
+	seq, err := m.seqCache.GetLatest(ctx, member)
+	if err != nil {
+		m.log.Warn(err.Error())
+		return nil, 0, err
+	}
+
+	msgArr, err := m.syncRepo.Scan(ctx, member, data.ScanParameter{
 		From:      lastRead,
 		To:        math.MaxInt64,
 		MaxCount:  limit,
 		IsForward: false,
 	})
+	return msgArr, seq, err
 }
 
 func (m *messageUseCase) GetSingleHistoryMessage(ctx context.Context, from, to string, lastRead int64, numOfHistory int32) ([]data.Message, error) {

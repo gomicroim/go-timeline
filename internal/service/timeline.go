@@ -24,14 +24,20 @@ func NewTimelineService(msgUseCase biz.MessageUseCase, logger log.Logger) *Timel
 }
 
 func (s *TimelineService) GetSyncMessage(ctx context.Context, req *pb.SyncMessageRequest) (*pb.SyncMessageReply, error) {
-	msgArr, err := s.msgUseCase.GetSyncMessage(ctx, req.Member, req.LastRead, int(req.Count))
+	msgArr, latestSeq, err := s.msgUseCase.GetSyncMessage(ctx, req.Member, req.LastRead, int(req.Count))
 	if err != nil {
 		return nil, err
 	}
 
 	reply := &pb.SyncMessageReply{
-		EntrySet: make([]*pb.TimelineEntry, len(msgArr)),
+		EntrySet:  make([]*pb.TimelineEntry, len(msgArr)),
+		LatestSeq: latestSeq,
 	}
+
+	if len(msgArr) > 0 {
+		reply.EntrySetLastSeq = msgArr[len(msgArr)-1].Seq
+	}
+
 	for k, v := range msgArr {
 		reply.EntrySet[k] = &pb.TimelineEntry{
 			Sequence: v.Seq,
