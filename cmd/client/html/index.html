@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <style type="text/css">
+      .window {
+        width: 800px;
+        height: 600px;
+        margin: auto;
+        padding: 10px;
+        background-color: white;
+      }
+
+      .item-padding {
+        margin-top: 5px;
+      }
+
+      .to-input {
+        width: 100px;
+        margin-left: 20px;
+      }
+
+      .msg-box-container {
+        margin-top: 20px;
+      }
+
+      .msg-box {
+        border: 1px solid green;
+        margin-top: 5px;
+        width: 600px;
+        height: 400px;
+      }
+
+      .send-histroy {
+        margin-top: 20px;
+        border: 1px solid green;
+        width: 600px;
+        height: 100px;
+      }
+
+      .row_item {
+        float: left;
+      }
+    </style>
+    <script type="text/javascript">
+      let lastRead = 0;
+
+      axios.defaults.baseURL = "http://localhost:8000";
+      // axios.defaults.withCredentials = true; // 若跨域请求需要带 cookie 身份识别
+      // axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+
+      //创建axios的一个实例
+      // var instance = axios.create({
+      //   baseURL: "http://localhost:8000",
+      //   timeout: 6000,
+      // });
+
+      // ------------- api -------------
+
+      function syncMsg(maxPullMsgCount) {
+        let uri = "member=" + getUserId() + "&last_read=" + lastRead + "&count=" + maxPullMsgCount;
+        axios.get("/timeline/sync?" + uri).then(function (response) {
+          let data = response.data;
+          console.log(data);
+
+          let entrySet = data.entrySet;
+          for (let i = 0; i < entrySet.length; i++) {
+            let msg = JSON.parse(entrySet[i].message);
+            let seq = entrySet[i].sequence;
+            let displayText = "[" + seq + "]" + msg.from + " -> " + msg.to + ": " + msg.text;
+            insertMsg(displayText);
+            lastRead = seq;
+          }
+
+          if (entrySet.length == 0) {
+            updateSyncStatus("sync finish");
+          } else {
+            updateSyncStatus("sync next");
+            // continue pull （给1秒时间，方便观察）
+            setTimeout(function () {
+              syncMsg(maxPullMsgCount);
+            }, 1000);
+          }
+        });
+      }
+
+      function sendMsg(from, to, text) {
+        let msg = buildMsg(from, to, false, text);
+        let msgJson = JSON.stringify(msg);
+
+        axios
+          .post("/timeline/send", {
+            from: from,
+            to: to,
+            message: msgJson,
+          })
+          .then(function (response) {
+            console.log(response.data);
+          });
+      }
+
+      function buildMsg(from, to, isGroup, text) {
+        let msg = {
+          from: from,
+          to: to,
+          is_group: isGroup,
+          text: text,
+        };
+        return msg;
+      }
+
+      function sendGroupMsg(from, group, groupMemberArr, text) {
+        let msg = buildMsg(from, group, true, text);
+        let msgJson = JSON.stringify(msg);
+
+        axios({
+          method: "post",
+          url: "/timeline/sendGroup",
+          data: {
+            group_name: group,
+            group_members: groupMemberArr,
+            message: msgJson,
+          },
+        }).then(function (response) {
+          console.log(response.data);
+        });
+      }
+
+      // ------------- logic -------------
+
+      function doSyncMsg() {
+        clearMsg();
+        updateSyncStatus("sync start");
+        lastRead = getLastSyncSeq();
+        maxPullMsgCount = getSyncCount();
+        syncMsg(maxPullMsgCount);
+      }
+
+      function doSendMsg() {
+        let from = getUserId();
+        let to = getToUserId();
+        let text = getToUserText();
+
+        sendMsg(from, to, text);
+        insertToHistoryMsg(from + " -> " + to + ": " + text);
+      }
+
+      function doSendGroupMsg() {
+        let from = getUserId();
+        let to = getToGroupId();
+        let text = getToGroupText();
+        let members = getGroupMember();
+
+        sendGroupMsg(from, to, members, text);
+        insertToHistoryMsg(from + " -> " + to + ": " + text);
+      }
+
+      // ------------- view -------------
+
+      function getUserId() {
+        return document.getElementById("from_user_id").value;
+      }
+
+      function getToUserId() {
+        return document.getElementById("to_user_id").value;
+      }
+
+      function getToUserText() {
+        return document.getElementById("to_user_text").value;
+      }
+
+      function getToGroupId() {
+        return document.getElementById("to_group_id").value;
+      }
+
+      function getToGroupText() {
+        return document.getElementById("to_group_text").value;
+      }
+
+      function getGroupMember() {
+        let member = document.getElementById("to_group_member").value;
+        return member.split(",");
+      }
+
+      function insertMsg(text) {
+        let div = document.getElementById("sync_msg_list");
+        div.innerHTML += "<p style='height:14px;'> " + text + "</p>";
+      }
+
+      function clearMsg() {
+        let div = document.getElementById("sync_msg_list");
+        div.innerHTML = "";
+      }
+
+      function insertToHistoryMsg(text) {
+        let div = document.getElementById("send_msg_list");
+        div.innerHTML += "<p style='height:14px;'> " + text + "</p>";
+      }
+
+      function updateSyncStatus(state) {
+        document.getElementById("sync_status").innerText = state;
+      }
+
+      function updateLastSyncSeq(seq) {
+        document.getElementById("last_sync_seq").value = seq;
+      }
+
+      function getLastSyncSeq() {
+        return document.getElementById("last_sync_seq").value;
+      }
+
+      function getSyncCount() {
+        return document.getElementById("sync_count").value;
+      }
+    </script>
+  </head>
+
+  <body>
+    <div class="window">
+      <!-- 第一行 -->
+      <div class="row">your user id:<input type="text" id="from_user_id" value="a" class="to-input" /></div>
+
+      <!-- single -->
+      <div class="row item-padding">
+        <p class="row_item">to user:</p>
+        <input type="text" id="to_user_id" value="b" class="to-input row_item" style="margin-left: 50px" />
+        <div class="row_item" style="margin-left: 222px">
+          text:<input type="text" id="to_user_text" value="hello" class="to-input" style="width: 200px" />
+        </div>
+        <input type="button" value="send" onclick="doSendMsg();" class="row_item" style="margin-left: 10px" />
+      </div>
+
+      <!-- group input -->
+      <div class="row">
+        <p class="row_item">to group:</p>
+        <input type="text" id="to_group_id" value="test-group" class="to-input row_item" style="margin-left: 40px" />
+
+        <!-- group member -->
+        <p class="row_item" style="margin-left: 10px">group member:</p>
+        <input type="text" id="to_group_member" value="a,b,c,d,e,f,g" class="to-input row_item" style="margin-left: 5px" />
+
+        <div class="row_item" style="margin-left: 10px">
+          text:<input type="text" id="to_group_text" value="大家好" class="to-input" style="width: 200px" />
+        </div>
+        <input type="button" value="send" onclick="doSendGroupMsg();" class="row_item" style="margin-left: 10px" />
+      </div>
+
+      <!-- send msg box -->
+      <div class="send-histroy" id="send_msg_list"></div>
+
+      <!-- sync msg -->
+      <div class="msg-box-container">
+        <div class="row">
+          <div class="col-md-2">
+            <p style="float: left; width: auto">lastRead:</p>
+            <input type="text" id="last_sync_seq" value="0" class="to-input" style="margin-left: 5px; float: left; width: 40px" />
+          </div>
+          <div class="col-md-3">
+            <p style="float: left; width: auto">maxPullMsgCount:</p>
+            <input type="text" id="sync_count" value="10" class="to-input" style="margin-left: 5px; float: left; width: 40px" />
+          </div>
+          <div class="col-md-7">
+            <input type="button" value="sync msg" style="margin-left: 5px; float: left" onclick="doSyncMsg();" />
+            <p id="sync_status" style="float: left; margin-left: 15px">ready</p>
+          </div>
+        </div>
+        <div class="row"></div>
+
+        <div class="msg-box" id="sync_msg_list"></div>
+      </div>
+
+      <!-- history msg -->
+    </div>
+  </body>
+</html>

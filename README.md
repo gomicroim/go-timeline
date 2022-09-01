@@ -114,6 +114,12 @@ message_test.go:132: [seq=23] c -> group_a: 报三围
 message_test.go:132: [seq=24] a -> group_a: 初次见面，多多指教
 ```
 
+## screenhost
+
+see [html client](./cmd/client/html/index.html): 
+
+![./doc/img/screenhost.jpg](./doc/img/screenhost.jpg)
+
 ## api
 
 ### /timeline/send
