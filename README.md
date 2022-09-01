@@ -11,6 +11,8 @@ depends:
 
 ### 场景
 
+假设有如下聊天场景：
+
 ```text
 a -> b: 吃了吗？
 b -> a: 吃了
@@ -28,9 +30,11 @@ a -> group_a: 初次见面，多多指教
 - c在群中发送一条消息
 - a在群中发送一条消息
 
+下面介绍主要接口实现。
+
 ### 发消息
 
-[message_test.go](internal/biz/message_test.go):
+[message_test.go: TestMessageUseCase_Send](internal/biz/message_test.go):
 
 ```go
 var (
@@ -48,6 +52,8 @@ assert.NoError(t, sendGroup(mc, "a", "group_a", []string{"a", "c", "d"}, "初次
 ```
 
 ### 同步消息（扩散写，存N份）
+
+[message_test.go: TestMessageUseCase_GetSyncMessage](internal/biz/message_test.go):
 
 ```go
 lastRead = 0
@@ -89,7 +95,7 @@ message_test.go:132: [seq=15] a -> group_a: 初次见面，多多指教
 
 ### 查询历史消息（扩散读，只存一份）
 
-- 单聊
+- 单聊（[message_test.go: TestMessageUseCase_GetSingleHistoryMessage](internal/biz/message_test.go)）
 
 ```go
 lastRead = 0
@@ -101,7 +107,7 @@ message_test.go:132: [seq=13] a -> b: 吃了吗？
 message_test.go:132: [seq=14] b -> a: 吃了
 ```
 
-- 群聊
+- 群聊([message_test.go: TestMessageUseCase_GetGroupHistoryMessage](internal/biz/message_test.go))
 
 ```go
 lastRead = 0
