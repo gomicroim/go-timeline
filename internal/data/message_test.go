@@ -19,9 +19,10 @@ var (
 func mustSetupMessage() MessageRepo {
 	config := &conf.Data{
 		Mongo: &conf.Data_Mongo{
-			Source:             "mongodb://root:123456@localhost:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false",
-			Database:           "im",
-			SyncChatCollection: "chat",
+			Source:                "mongodb://root:123456@localhost:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false",
+			ChatDatabase:          "im",
+			SyncChatCollection:    "unit_chat_sync",
+			HistoryChatCollection: "unit_chat_history",
 		},
 		Redis: &conf.Data_Redis{
 			Addr:         "127.0.0.1:6379",
@@ -35,7 +36,7 @@ func mustSetupMessage() MessageRepo {
 	if err != nil {
 		panic(err)
 	}
-	return NewMessageRepo(data, config.Mongo.Database, config.Mongo.SyncChatCollection, log.DefaultLogger)
+	return NewMessageRepo(data, config.Mongo.ChatDatabase, config.Mongo.SyncChatCollection, log.DefaultLogger)
 }
 
 func TestMessageRepo_Store(t *testing.T) {
@@ -55,6 +56,37 @@ func TestMessageRepo_Store(t *testing.T) {
 		Message: msgData.ToMap(),
 	})
 	assert.NoError(t, err)
+}
+
+func TestMessageRepo_StoreBatch(t *testing.T) {
+	repo := mustSetupMessage()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	r, err := repo.StoreBatch(ctx, []*Message{
+		{
+			//ObjectId: 1,
+			Id:      "user_a",
+			Seq:     1,
+			Message: map[string]interface{}{"from": "1"},
+		},
+		{
+			//ObjectId: 1,
+			Id:      "user_a",
+			Seq:     2,
+			Message: map[string]interface{}{"from": "1"},
+		},
+		{
+			//ObjectId: 2,
+			Id:      "user_a",
+			Seq:     3,
+			Message: map[string]interface{}{"from": "1"},
+		},
+	})
+	if err != nil {
+		t.Logf("%v", r)
+	}
 }
 
 func TestMessageRepo_Load(t *testing.T) {

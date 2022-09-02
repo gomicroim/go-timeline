@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"math"
+	"time"
 	"timeline-service/internal/conf"
 	"timeline-service/internal/data"
 )
@@ -19,6 +20,10 @@ type messageUseCase struct {
 
 var (
 	kSeqCachePrefix = "seq"
+)
+
+const (
+	kWarnStoreBatchCostTime = 500 // SendGroup 批量写mongo耗时警告，ms
 )
 
 type GroupResult struct {
@@ -78,13 +83,43 @@ func (m *messageUseCase) SendGroup(ctx context.Context, group string, groupMembe
 		return nil, err
 	}
 
-	result = make([]*GroupResult, len(groupMember))
+	result = make([]*GroupResult, 0)
+	messageArr := make([]*data.Message, len(groupMember))
 
 	// write to all group member receiver
-	for i, member := range groupMember {
-		result[i] = &GroupResult{}
-		receiver := member
-		result[i].Seq, result[i].Err = m.store(ctx, receiver, jsonMsg, m.syncRepo)
+	for k, member := range groupMember {
+		seq, err := m.seqCache.Incr(ctx, member)
+		if err != nil {
+			return nil, err
+		}
+		messageArr[k] = &data.Message{
+			Id:      member,
+			Seq:     seq,
+			Message: msgObj,
+		}
+	}
+	// write batch
+	t1 := time.Now()
+	failedMsg, err := m.syncRepo.StoreBatch(ctx, messageArr)
+	if err != nil {
+		m.log.Warn(err.Error())
+		return nil, err
+	}
+	cost := time.Now().Sub(t1).Milliseconds()
+	if cost > kWarnStoreBatchCostTime {
+		m.log.Warn("SendGroup cost too time", "time:", cost)
+	} else {
+		m.log.Debug("SendGroup cost ", "time:", cost)
+	}
+
+	if failedMsg != nil {
+		for _, v := range failedMsg {
+			result = append(result, &GroupResult{
+				GroupMember: v.Id,
+				Err:         err,
+				Seq:         v.Seq,
+			})
+		}
 	}
 	return result, nil
 }

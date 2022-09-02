@@ -98,7 +98,7 @@ func TestMessageUseCase_Send(t *testing.T) {
 
 func TestMessageUseCase_GetSyncMessage(t *testing.T) {
 	mc := mustSetupMessage()
-	msgResult, err := mc.GetSyncMessage(context.Background(), user4, 0, math.MaxInt64)
+	msgResult, _, err := mc.GetSyncMessage(context.Background(), user4, 0, math.MaxInt64)
 	assert.NoError(t, err)
 	printResult(t, msgResult)
 }

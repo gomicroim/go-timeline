@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,9 +11,15 @@ import (
 )
 
 type Message struct {
+	// 插入时，务必设置为0，以使用 mongo的objectId，否则会大幅降低写入性能
+	//ObjectId string                 `bson:"_id,omitempty"`
 	Id      string                 `bson:"id,omitempty"`      // id，非mongo的对象id
 	Seq     int64                  `bson:"seq,omitempty"`     // 连续递增序号
 	Message map[string]interface{} `bson:"message,omitempty"` // 数据内容
+}
+
+func (m Message) String() string {
+	return fmt.Sprintf("id=%s,seq=%d,message=%v", m.Id, m.Seq, m.Message)
 }
 
 type ScanParameter struct {
@@ -24,6 +31,7 @@ type ScanParameter struct {
 
 type MessageRepo interface {
 	Store(ctx context.Context, message *Message) (string, error)
+	StoreBatch(ctx context.Context, messages []*Message) (failed []*Message, err error)
 	Update(ctx context.Context, objId string, message *Message) error
 	LoadById(ctx context.Context, objId string) (*Message, error)
 	DeleteById(ctx context.Context, objId string) error
@@ -50,6 +58,23 @@ func (m *messageRepo) Store(ctx context.Context, message *Message) (string, erro
 		return "", err
 	}
 	return res.InsertedID.(primitive.ObjectID).String(), nil
+}
+
+func (m *messageRepo) StoreBatch(ctx context.Context, messages []*Message) ([]*Message, error) {
+	values := make([]interface{}, len(messages))
+	for k := range messages {
+		values[k] = messages[k]
+	}
+	_, err := m.chatCollection.InsertMany(ctx, values)
+	if err != nil {
+		bulkErr, ok := err.(mongo.BulkWriteException)
+		if !ok {
+			return nil, err
+		}
+		index := bulkErr.WriteErrors[0].Index
+		return messages[index:], nil
+	}
+	return nil, nil
 }
 
 func (m *messageRepo) Update(ctx context.Context, objId string, message *Message) error {
