@@ -370,8 +370,9 @@ type SyncMessageReply struct {
 	// 最新的消息序号
 	LatestSeq int64 `protobuf:"varint,1,opt,name=latest_seq,json=latestSeq,proto3" json:"latest_seq,omitempty"`
 	// entry_set 中最后的序号值
-	EntrySetLastSeq int64            `protobuf:"varint,2,opt,name=entry_set_last_seq,json=entrySetLastSeq,proto3" json:"entry_set_last_seq,omitempty"`
-	EntrySet        []*TimelineEntry `protobuf:"bytes,3,rep,name=entry_set,json=entrySet,proto3" json:"entry_set,omitempty"`
+	EntrySetLastSeq int64 `protobuf:"varint,2,opt,name=entry_set_last_seq,json=entrySetLastSeq,proto3" json:"entry_set_last_seq,omitempty"`
+	// 如果拉取到的结果为空，说明同步完成
+	EntrySet []*TimelineEntry `protobuf:"bytes,3,rep,name=entry_set,json=entrySet,proto3" json:"entry_set,omitempty"`
 }
 
 func (x *SyncMessageReply) Reset() {

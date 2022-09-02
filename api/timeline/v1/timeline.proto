@@ -85,6 +85,7 @@ message SyncMessageReply {
   int64 latest_seq = 1;
   // entry_set 中最后的序号值
   int64 entry_set_last_seq = 2;
+  // 如果拉取到的结果为空，说明同步完成
   repeated TimelineEntry entry_set = 3;
 }
 
