@@ -5,9 +5,9 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	v1 "timeline-service/api/timeline/v1"
-	"timeline-service/internal/conf"
-	"timeline-service/internal/service"
+	v1 "github.com/gomicroim/go-timeline/api/timeline/v1"
+	"github.com/gomicroim/go-timeline/internal/conf"
+	"github.com/gomicroim/go-timeline/internal/service"
 )
 
 // NewGRPCServer new a gRPC server.

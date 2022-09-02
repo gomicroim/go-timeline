@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/gomicroim/go-timeline/internal/conf"
+	"github.com/gomicroim/go-timeline/internal/data"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"math"
 	"testing"
 	"time"
-	"timeline-service/internal/conf"
-	"timeline-service/internal/data"
 )
 
 var (

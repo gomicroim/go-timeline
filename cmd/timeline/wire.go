@@ -8,12 +8,12 @@ package main
 import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/gomicroim/go-timeline/internal/biz"
+	"github.com/gomicroim/go-timeline/internal/conf"
+	"github.com/gomicroim/go-timeline/internal/data"
+	"github.com/gomicroim/go-timeline/internal/server"
+	"github.com/gomicroim/go-timeline/internal/service"
 	"github.com/google/wire"
-	"timeline-service/internal/biz"
-	"timeline-service/internal/conf"
-	"timeline-service/internal/data"
-	"timeline-service/internal/server"
-	"timeline-service/internal/service"
 )
 
 // wireApp init kratos application.

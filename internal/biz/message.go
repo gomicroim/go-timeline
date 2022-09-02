@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/gomicroim/go-timeline/internal/conf"
+	"github.com/gomicroim/go-timeline/internal/data"
 	"math"
 	"time"
-	"timeline-service/internal/conf"
-	"timeline-service/internal/data"
 )
 
 type messageUseCase struct {

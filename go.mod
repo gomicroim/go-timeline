@@ -1,4 +1,4 @@
-module timeline-service
+module github.com/gomicroim/go-timeline
 
 go 1.17
 

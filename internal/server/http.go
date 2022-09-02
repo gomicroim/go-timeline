@@ -10,10 +10,10 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	v1 "github.com/gomicroim/go-timeline/api/timeline/v1"
+	"github.com/gomicroim/go-timeline/internal/conf"
+	"github.com/gomicroim/go-timeline/internal/service"
 	nethttp "net/http"
-	v1 "timeline-service/api/timeline/v1"
-	"timeline-service/internal/conf"
-	"timeline-service/internal/service"
 )
 
 //MiddlewareCors 设置跨域请求头

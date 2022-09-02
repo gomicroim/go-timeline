@@ -4,7 +4,7 @@ package timeline.v1;
 
 import "google/api/annotations.proto";
 
-option go_package = "timeline-service/api/timeline/v1;v1";
+option go_package = "api/timeline/v1;v1";
 
 // The Timeline service definition.
 service Timeline {

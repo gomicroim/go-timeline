@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
-	pb "timeline-service/api/timeline/v1"
-	"timeline-service/internal/biz"
+	pb "github.com/gomicroim/go-timeline/api/timeline/v1"
+	"github.com/gomicroim/go-timeline/internal/biz"
 )
 
 type TimelineService struct {

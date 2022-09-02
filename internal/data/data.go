@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
+	"github.com/gomicroim/go-timeline/internal/conf"
 	"github.com/google/wire"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
-	"timeline-service/internal/conf"
 )
 
 // ProviderSet is data providers.
