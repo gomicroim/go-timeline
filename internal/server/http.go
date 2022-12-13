@@ -10,7 +10,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	v1 "github.com/gomicroim/go-timeline/api/timeline/v1"
+	v1 "github.com/gomicroim/go-timeline/api/v1"
 	"github.com/gomicroim/go-timeline/internal/conf"
 	"github.com/gomicroim/go-timeline/internal/service"
 	nethttp "net/http"

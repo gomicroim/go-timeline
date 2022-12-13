@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
-	pb "github.com/gomicroim/go-timeline/api/timeline/v1"
+	pb "github.com/gomicroim/go-timeline/api/v1"
 	"github.com/gomicroim/go-timeline/internal/biz"
 )
 
