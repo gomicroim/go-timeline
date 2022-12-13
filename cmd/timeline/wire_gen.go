@@ -7,6 +7,7 @@
 package main
 
 import (
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gomicroim/go-timeline/internal/biz"
@@ -19,7 +20,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, registry *etcd.Registry, config *conf.Bootstrap) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
@@ -29,7 +30,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	timelineService := service.NewTimelineService(messageUseCase, logger)
 	grpcServer := server.NewGRPCServer(confServer, timelineService, logger)
 	httpServer := server.NewHTTPServer(confServer, timelineService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	app := newApp(logger, grpcServer, httpServer, registry, config)
 	return app, func() {
 		cleanup()
 	}, nil

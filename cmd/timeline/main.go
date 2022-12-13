@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"net/url"
 	"os"
 
 	"github.com/go-kratos/kratos/v2"
@@ -30,7 +33,12 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, registry *etcd.Registry, config *conf.Bootstrap) *kratos.App {
+	var endpoint = kratos.Endpoint([]*url.URL{}...)
+	if config.Registry.Etcd.RegisterEndPoint != "" {
+		endpoint = kratos.Endpoint(&url.URL{Host: config.Registry.Etcd.RegisterEndPoint, Scheme: "grpc"})
+	}
+
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -41,6 +49,8 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 			gs,
 			hs,
 		),
+		kratos.Registrar(registry),
+		endpoint,
 	)
 }
 
@@ -71,7 +81,20 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	// update service name
+	Name = bc.Registry.Etcd.RegisterServerName
+
+	// register etcd
+	etcdClient, err := clientv3.New(clientv3.Config{
+		Endpoints: bc.Registry.Etcd.Endpoints,
+	})
+	if err != nil {
+		panic(err)
+	}
+	_ = logger.Log(log.LevelInfo, "register etcd", "endpoints", bc.Registry.Etcd.Endpoints)
+	reg := etcd.New(etcdClient)
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, reg, &bc)
 	if err != nil {
 		panic(err)
 	}

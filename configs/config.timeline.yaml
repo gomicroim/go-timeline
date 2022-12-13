@@ -19,3 +19,10 @@ data:
     password: coffeechat
     read_timeout: 0.2s
     write_timeout: 0.2s
+registry:
+  etcd:
+    # endpoints 设置为 []，则不启用服务注册功能
+    endpoints: [ localhost:2379 ]
+    register_server_name: go-timeline
+    # 注册的 Endpoint，不指定默认使用本机IP
+    register_end_point: ""
