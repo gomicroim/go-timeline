@@ -28,4 +28,4 @@ VOLUME /data/conf
 
 # ${app} 是环境变量，dockerfile 中 args 只在build time生效，CMD是 runtime
 # see: https://github.com/moby/moby/issues/34772
-CMD exec ./app -conf /data/conf/config.yaml
+CMD exec ./app -conf /data/conf/config.timeline.yaml
