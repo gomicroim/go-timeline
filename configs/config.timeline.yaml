@@ -7,22 +7,15 @@ server:
     timeout: 1s
 data:
   mongo:
-    #source: mongodb://root:123456@localhost:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false
-    source: mongodb://root:123456@tl_mongo:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false
+    source: mongodb://root:123456@localhost:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false
+#    source: mongodb://root:123456@tl_mongo:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false
     chat_database: im
     sync_chat_collection: chat_sync
     history_chat_collection: chat_history
   redis:
-    #addr: localhost:6379
-    addr: tl_redis:6379
+    addr: localhost:6379
+#    addr: tl_redis:6379
     db: 1
     password: coffeechat
     read_timeout: 0.2s
     write_timeout: 0.2s
-registry:
-  etcd:
-    # endpoints 设置为 []，则不启用服务注册功能
-    endpoints: [ localhost:2379 ]
-    register_server_name: go-timeline
-    # 注册的 Endpoint，不指定默认使用本机IP
-    register_end_point: ""
